@@ -1,6 +1,9 @@
 # MERN Authentication App
 A complete authentication system with signup, login, email verification, and password reset built using React (frontend) and Node.js + Express + MongoDB (backend).
 
+## Notes
+This project was originally developed locally as part of my early backend learning journey. I followed a tutorial by (GreatStack) to understand how backend architecture, authentication, and database handling work in practice. Some commits might not be structured as expected.
+
 ## Tech Stack
 - React + Vite + Tailwind CSS
 - Node.js + Express
