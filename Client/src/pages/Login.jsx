@@ -32,7 +32,7 @@ function Login() {
 
         if (data.success) {
           setIsLoggedin(true);
-          getUserData();
+          await getUserData();
           navigate("/");
         } else {
           toast.error(data.message);
