@@ -1,143 +1,149 @@
-import React, { useContext, useState } from 'react'
-import { assets } from '../assets/assets'
-import { useNavigate } from 'react-router-dom'
-import { AppContent } from '../context/AppContext';
-import axios from 'axios';
-import { toast } from 'react-toastify'
+/* Client/src/pages/Login.jsx */
+
+import React, { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AppContent } from "../context/AppContext";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 function Login() {
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
+  const { backendUrl, setIsLoggedin, getUserData } = useContext(AppContent);
 
-    const { backendUrl, setIsLoggedin, getUserData} = useContext(AppContent);
+  const [state, setState] = useState("Sign Up");
 
-    const [state, setState] = useState("Sign Up");
-    const [name, setName] = useState("")
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-    const onSubmitHandler = async (e) => {
-        e.preventDefault();
-        try {
+  const onSubmitHandler = async (e) => {
+    e.preventDefault();
 
-            axios.defaults.withCredentials = true;
+    try {
+      axios.defaults.withCredentials = true;
 
-            if (state === 'Sign Up') {
-                const { data } = await axios.post(backendUrl + "/api/auth/register", {
-                    name,
-                    email,
-                    password
-                });
+      if (state === "Sign Up") {
+        const { data } = await axios.post(backendUrl + "/api/auth/register", {
+          name,
+          email,
+          password,
+        });
 
-                if (data.success) {
-                    setIsLoggedin(true)
-                    getUserData();
-                    navigate("/")
-                }
-                else {
-                    toast.error(data.message);
-                }
-
-            } else {
-                const { data } = await axios.post(backendUrl + "/api/auth/login", {
-                    email,
-                    password
-                });
-
-                if (data.success) {
-                    setIsLoggedin(true);
-                    getUserData();
-                    navigate("/")
-                }
-                else {
-                    toast.error(data.message);
-                }
-            }
-
-
-        } catch (error) {
-            console.error("Error during authentication", error);
-            alert("Authentication failed. Please check your credentials.");
+        if (data.success) {
+          setIsLoggedin(true);
+          getUserData();
+          navigate("/");
+        } else {
+          toast.error(data.message);
         }
-    };
+      } else {
+        const { data } = await axios.post(backendUrl + "/api/auth/login", {
+          email,
+          password,
+        });
 
+        if (data.success) {
+          setIsLoggedin(true);
+          getUserData();
+          navigate("/");
+        } else {
+          toast.error(data.message);
+        }
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
-    return (
-        <div className="flex items-center justify-center min-h-screen px-6 sm:px-0 bg-gradient-to-br from-blue-200 to-purple-400">
-            <img
-                onClick={() => navigate("/")}
-                src={assets.logo}
-                alt="Logo"
-                className="absolute left-5 sm:left-20 top-5 w-28 sm:w-32 cursor-pointer"
-            />
+  return (
+    <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center px-6">
+      {/* Form Card */}
+      <div className="w-full max-w-lg bg-white border border-gray-200 rounded-3xl shadow-sm p-8 sm:p-10">
+        {/* Heading */}
+        <div className="text-center">
+          <h1 className="text-3xl font-semibold tracking-tight text-[#0f172a]">{state === "Sign Up" ? "Create account" : "Welcome back"}</h1>
 
-            <div className="bg-slate-900 p-10 rounded-lg shadow-lg w-full sm:w-96 text-indigo-300 text-sm">
-                <h2 className="text-3xl font-semibold text-white text-center mb-3">
-                    {state === "Sign Up" ? "Create account" : "Login"}
-                </h2>
-
-                <p className="text-center text-sm mb-6">
-                    {state === "Sign Up" ? "Create your account" : "Login to your account!"}
-                </p>
-
-                <form onSubmit={onSubmitHandler}>
-                    {state === 'Sign Up' && (
-                        <div className="mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]">
-                            <img src={assets.person_icon} alt="User Icon" />
-                            <input
-                                onChange={(e) => setName(e.target.value)}
-                                value={name}
-                                type="text"
-                                placeholder="Full Name"
-                                required
-                                className="bg-transparent outline-none"
-                            />
-                        </div>
-                    )}
-
-                    <div className="mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]">
-                        <img src={assets.mail_icon} alt="User Icon" />
-                        <input
-                            onChange={(e) => setEmail(e.target.value)}
-                            value={email}
-                            type="Email"
-                            placeholder="Email Id"
-                            required
-                            className="bg-transparent outline-none"
-                        />
-                    </div>
-                    <div className="mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]">
-                        <img src={assets.lock_icon} alt="User Icon" />
-                        <input
-                            onChange={(e) => setPassword(e.target.value)}
-                            value={password}
-                            type="password"
-                            placeholder="Password"
-                            required
-                            className="bg-transparent outline-none"
-                        />
-                    </div>
-
-                    <p
-                        onClick={() => navigate("/reset-password")}
-                        className='mb-4 text-indigo-500 cursor-pointer'>Forgot password</p>
-
-                    <button className='w-full py-2.5 rounded-full bg-gradient-to-r from-indigo-500 to-indigo-900 text-white font-medium '>{state}</button>
-                </form>
-                {state === 'Sign Up' ? (
-                    <p className='text-gray-400 text-center text-xs mt-4'>Already have an account?{' '}
-                        <span onClick={() => setState('Login')} className='text-blue-400 cursor-pointer underline'>Login here</span>
-                    </p>
-                )
-                    : (
-                        <p className='text-gray-400 text-center text-xs mt-4'>Don't have an account?{' '}
-                            <span onClick={() => setState('Sign Up')} className='text-blue-400 cursor-pointer underline'>Sign Up</span>
-                        </p>
-                    )}
-
-            </div>
+          <p className="mt-3 text-sm text-gray-500 leading-6">
+            {state === "Sign Up" ? "Create your account to continue." : "Login to your account to continue."}
+          </p>
         </div>
-    )
+
+        {/* Form */}
+        <form onSubmit={onSubmitHandler} className="mt-8 space-y-5">
+          {state === "Sign Up" && (
+            <div>
+              <label className="text-sm font-medium text-[#0f172a]">Full Name</label>
+
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="John Doe"
+                className="mt-2 w-full rounded-xl border border-gray-200 bg-[#f8fafc] px-4 py-3 outline-none focus:border-[#0f172a] transition"
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="text-sm font-medium text-[#0f172a]">Email Address</label>
+
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-[#f8fafc] px-4 py-3 outline-none focus:border-[#0f172a] transition"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-[#0f172a]">Password</label>
+
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-[#f8fafc] px-4 py-3 outline-none focus:border-[#0f172a] transition"
+            />
+          </div>
+
+          {state === "Login" && (
+            <div className="flex justify-end">
+              <button type="button" onClick={() => navigate("/reset-password")} className="text-sm text-gray-500 hover:text-[#0f172a] transition">
+                Forgot password?
+              </button>
+            </div>
+          )}
+
+          <button className="w-full rounded-xl bg-[#0f172a] py-3 text-sm font-medium text-white hover:opacity-90 transition">{state}</button>
+        </form>
+
+        {/* Footer */}
+        <div className="mt-8 text-center text-sm text-gray-500">
+          {state === "Sign Up" ? (
+            <>
+              Already have an account?{" "}
+              <button onClick={() => setState("Login")} className="font-medium text-[#0f172a]">
+                Login
+              </button>
+            </>
+          ) : (
+            <>
+              Don’t have an account?{" "}
+              <button onClick={() => setState("Sign Up")} className="font-medium text-[#0f172a]">
+                Sign Up
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export default Login
+export default Login;

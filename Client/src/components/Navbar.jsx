@@ -1,66 +1,122 @@
-import React, { useContext } from 'react'
-import { assets } from '../assets/assets'
-import { useNavigate } from 'react-router-dom'
-import { AppContent } from '../context/AppContext';
-import { toast } from 'react-toastify';
-import axios from 'axios';
+/* Client/src/components/Navbar.jsx */
+
+import React, { useContext, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AppContent } from "../context/AppContext";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 function Navbar() {
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
-    const {userData, backendUrl, setUserData, setIsLoggedin} = useContext(AppContent);
+  const { userData, backendUrl, setUserData, setIsLoggedin } = useContext(AppContent);
 
-    const sendVerificationOtp = async () => {
-        try {
-            axios.defaults.withCredentials = true;
+  const [open, setOpen] = useState(false);
 
-            const {data} = await axios.post(backendUrl + "/api/auth/send-verify-otp")
+  const timeoutRef = useRef(null);
 
-            if(data.success){
-                navigate('/email-verify')
-                toast.success(data.message)
-            }else{
-                toast.error(data.message);
-            }
+  const handleMouseEnter = () => {
+    clearTimeout(timeoutRef.current);
+    setOpen(true);
+  };
 
-        } catch (error) {
-            toast.error(error.message);
-        }
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setOpen(false);
+    }, 250);
+  };
+
+  const sendVerificationOtp = async () => {
+    try {
+      axios.defaults.withCredentials = true;
+
+      const { data } = await axios.post(backendUrl + "/api/auth/send-verify-otp");
+
+      if (data.success) {
+        navigate("/email-verify");
+        toast.success(data.message);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
     }
+  };
 
-    const logout = async () => {
-        try {
-            axios.defaults.withCredentials = true;
-            const {data} = await axios.post(backendUrl + '/api/auth/logout')
-            data.success && setIsLoggedin(false);
-            data.success && setUserData(false);
-            navigate('/')
-        } catch (error) {
-            toast.error(error.message);
-        }
+  const logout = async () => {
+    try {
+      axios.defaults.withCredentials = true;
+
+      const { data } = await axios.post(backendUrl + "/api/auth/logout");
+
+      if (data.success) {
+        setIsLoggedin(false);
+        setUserData(false);
+        navigate("/");
+      }
+    } catch (error) {
+      toast.error(error.message);
     }
+  };
 
-    return (
-        <div className='w-full flex justify-between items-center p-4 sm:p-6 sm:px-24 absolute top-0'>
-
-            <img src={assets.logo} alt="" className='w-28 sm:2-32' />
-            {userData? 
-            <div className='w-8 h-8 flex justify-center items-center rounded-full bg-black text-white relative group'>
-                {userData.name[0].toUpperCase()}
-                <div className='absolute hidden group-hover:block top-0 right-0 z-10 text-black rounded pt-10'>
-                    <ul className='list-none m-0 p-2 bg-gray-100 text-sm'>
-                            {!userData.isAccountVerified && <li onClick={sendVerificationOtp} className='py-1 px-2 hover:bg-gray-200 cursor-pointer'>Verify Email</li>}
-                        
-                            <li onClick={logout} className='py-1 px-2 pr-10 hover:bg-gray-200 cursor-pointer'>Logout</li>
-                    </ul>
-                </div>
-            </div> 
-                : <button onClick={() => navigate('/login')} className='flex item-center gap-2 border border-gray-500 rounded-full px-6 py-2 text-gray-800 hover:bg-gray-100'>Login <img src={assets.arrow_icon} alt="" /></button>
-             }
-            
-
+  return (
+    <nav className="w-full flex items-center justify-between px-6 sm:px-10 lg:px-16 py-6">
+      {/* Logo */}
+      <div onClick={() => navigate("/")} className="flex items-center gap-3 cursor-pointer select-none">
+        {/* Logo Mark */}
+        <div className="w-10 h-10 rounded-xl bg-[#0f172a] flex items-center justify-center shadow-sm">
+          <span className="text-white text-sm font-semibold tracking-tight">A</span>
         </div>
-    )
+
+        {/* Logo Text */}
+        <div className="flex flex-col leading-none">
+          <span className="text-[17px] font-semibold tracking-tight text-[#0f172a]">Auth</span>
+
+          <span className="text-xs text-gray-500 mt-1">MERN Infrastructure</span>
+        </div>
+      </div>
+
+      {/* Right Side */}
+      {userData ? (
+        <div className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+          {/* Avatar */}
+          <div className="w-10 h-10 rounded-full bg-[#0f172a] text-white flex items-center justify-center font-medium cursor-pointer shadow-sm">
+            {userData.name[0].toUpperCase()}
+          </div>
+
+          {/* Dropdown */}
+          <div
+            className={`absolute right-0 top-14 w-56 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden transition-all duration-200 ${
+              open ? "opacity-100 translate-y-0 visible" : "opacity-0 -translate-y-2 invisible"
+            }`}
+          >
+            <div className="px-4 py-3 border-b border-gray-100">
+              <p className="text-sm font-medium text-[#0f172a]">{userData.name}</p>
+
+              <p className="text-xs text-gray-500 mt-1">Authenticated User</p>
+            </div>
+
+            {!userData.isAccountVerified && (
+              <button onClick={sendVerificationOtp} className="w-full text-left px-4 py-3 text-sm text-[#0f172a] hover:bg-gray-50 transition">
+                Verify Email
+              </button>
+            )}
+
+            <button onClick={logout} className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition">
+              Logout
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => navigate("/login")}
+          className="px-5 py-2.5 rounded-xl bg-[#0f172a] text-white text-sm font-medium hover:opacity-90 transition shadow-sm"
+        >
+          Login
+        </button>
+      )}
+    </nav>
+  );
 }
 
-export default Navbar
+export default Navbar;
