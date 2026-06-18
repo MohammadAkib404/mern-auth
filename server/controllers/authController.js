@@ -41,7 +41,10 @@ export const register = async (req, res) => {
       text: `Welcome to greatstack website. Your account has been created with email id: ${email}`,
     };
 
-    await transporter.sendMail(mailOptions);
+    transporter
+      .sendMail(mailOptions)
+      .then(() => console.log("Registration email sent to", email))
+      .catch((mailError) => console.error("Registration email failed:", mailError));
 
     return res.json({ success: true });
   } catch (error) {
